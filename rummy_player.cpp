@@ -157,28 +157,10 @@ string two_decks::remove_top_card_v(string pile){
         // Pop_front
         top_card = blind_pile_v.front();
         blind_pile_v.erase(blind_pile_v.begin());
-        // Debug Printing
-        // cout << "b - top_card = " << top_card << endl;
     }
     else if(pile == "d"){
-        // Debug Printing
-        // cout << "size_0 = " << discard_pile_v.size() << endl;
-        // cout << "discard_pile_v0:\n";
-        // for(int i=0; i<discard_pile_v.size(); i++){
-        //     cout << discard_pile_v[i] << ", ";
-        // }
-        // cout << endl;
         top_card = discard_pile_v.back();
         discard_pile_v.pop_back();
-        // More Debug Printing
-        // cout << "size_1 = " << discard_pile_v.size() << endl;
-        // cout << "discard_pile_v1:\n";
-        // for(int i=0; i<discard_pile_v.size(); i++){
-        //     cout << discard_pile_v[i] << ", ";
-        // }
-        // cout << "d - top_card = " << top_card << endl;
-
-        // discard_pile_v.erase(discard_pile_v.end());
     }
     else{
         cout << "Error: two_decks::remove_top_card_v - pile \
