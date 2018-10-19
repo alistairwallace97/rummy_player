@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 // Define a class for the two piles, the discard and blind
@@ -31,7 +32,46 @@ class two_decks {
         // void reset_discard_top();
         // string remove_top_card(string pile);
         string remove_top_card_v(string pile);
+        string add_to_discard_v(string card){
+            discard_pile_v.push_back(card);
+        }
 };
+
+// Define a class of type player
+class player {
+        string* hand;    // Max length 7
+        int current_score; // Min -95, max +95
+        vector<string> hand_v;
+    public:
+        string name;
+        string* table_hand; // Max length 7
+        vector<string> table_hand_v;
+        // void initialise_hands();
+        void initialise_hands_v();
+        // void view_hand();
+        void view_hand_v();
+        // void pick_up(two_decks& decks, string pile);
+        void pick_up_v(two_decks& decks, string pile);
+        void put_down_v(vector <string> put_down_cards);
+        bool check_in_hand(string card);
+        void increment_score(int num) {
+            current_score += num;
+        }
+        void discard_v(two_decks& decks, string card);
+        int cards_left = 7; //Max 7, min 0
+        player* next;
+};
+
+typedef player* plist;
+
+// Function Declarations
+plist reverse_list(plist in_lst);
+void print_lst(plist in_lst);
+plist loop_list(plist in_lst);
+string all_but_last(string str);
+bool are_aces_high(const vector <string>& put_down_cards);
+bool check_valid_set(vector <string>& put_down_cards);
+int eval_card(const string& str, bool aces_high);
 
 // void two_decks::initialise_decks(int num_decks, 
 //                                  int num_players){
@@ -171,30 +211,6 @@ string two_decks::remove_top_card_v(string pile){
     return top_card;
 }
 
-
-// Define a class of type player
-class player {
-        string* hand;    // Max length 7
-        int current_score; // Min -95, max +95
-        vector<string> hand_v;
-    public:
-        string name;
-        string* table_hand; // Max length 7
-        vector<string> table_hand_v;
-        // void initialise_hands();
-        void initialise_hands_v();
-        // void view_hand();
-        void view_hand_v();
-        // void pick_up(two_decks& decks, string pile);
-        void pick_up_v(two_decks& decks, string pile);
-        // put_down(self)
-        // throw_away(delf, deck)
-        int cards_left; // Max 7, min 0
-        player* next;
-};
-
-typedef player* plist;
-
 // void player::initialise_hands(){
 //     if(name == "cpu"){
 //         cout << "\nnot working for cpu yet" << endl;
@@ -223,7 +239,6 @@ typedef player* plist;
 void player::initialise_hands_v(){
     for(int i=0; i<7; i++){
         hand_v.push_back("unk");
-        cards_left = 7;
     }
 }
 
@@ -298,20 +313,94 @@ void player::pick_up_v(two_decks& decks, string pile){
         pile << ") was not in the right input.\nShould be \
         either 'b' or 'd'." << endl;
     }
-
 }
 
-plist reverse_list(plist in_lst);
-void print_lst(plist in_lst);
-plist loop_list(plist in_lst);
+void player::put_down_v(vector <string> put_down_cards){
+    bool all_in=true, aces_high=true;
+    string tmp;
+    cout << endl;
+    // Check that all the cards are in the players hand
+    for(int i=0; i<put_down_cards.size(); i++){
+        all_in = all_in&&check_in_hand(put_down_cards[i]);
+    }
+    // Check that they are a valid set
+    if(all_in && check_valid_set(put_down_cards)){
+        // For Later 
+        //     Check they aren't in the decks or anyone 
+        //     else's hand
+        for(int i=0; i<put_down_cards.size(); i++){
+            // add to table hand
+            table_hand_v.push_back(put_down_cards[i]); 
+            // increment current score
+            tmp = put_down_cards[i];
+            aces_high = are_aces_high(put_down_cards);
+            increment_score(eval_card(tmp, aces_high));
+            // remove from hand
+            hand_v.erase(remove(hand_v.begin(), hand_v.end(), put_down_cards[i]), hand_v.end());
+            // decrement cards_left
+            cards_left -= 1;
+        }
+    }
+    else{
+        if(!all_in){
+            cout << "Error: put_down_v - not all of these\
+            cards were in the players hand" << endl;
+        }
+        if(!check_valid_set(put_down_cards)){
+            cout << "Error: put_down_v - These cards were\
+            not a valid set" << endl;
+        }
+    }
+}
+
+bool player::check_in_hand(string card){
+    bool found = false;
+    // Check if the card is known to be in the hand
+    for(int i=0; (i<hand_v.size())&&(!found); i++){
+        // cout << "i2 = " << i << endl;
+        // cout << "card = " << card << endl;
+        // cout << "hand_v[i] = " << hand_v[i] << endl;
+        if(card == hand_v[i]){
+            found = true;
+        }
+    }
+    // If not say one of the unknown cards must have been
+    // that card
+    if(!found){
+        for(int i=0; (i<hand_v.size())&&(!found); i++){
+            if(hand_v[i] == "unk"){
+                hand_v[i] = card;
+                found = true;
+            }
+        }
+    }
+    return found;
+}
+
+void player::discard_v(two_decks& decks, string card){
+    // Check the card is in the player's hand
+    if(check_in_hand(card)){
+        // Add it to the top of the discard pile
+        decks.add_to_discard_v(card);
+        // Update the discard_top variable
+        decks.discard_top = card;
+        // Remove it from the players hand
+        hand_v.erase(remove(hand_v.begin(), hand_v.end(), card), hand_v.end());
+    }
+    else{
+        cout << "Error: discard_v - the card (" << card <<
+        ") is not in this player's hand" << endl;
+    }
+}
 
 int main(){
     // Initialisations
-    int num_players, num_decks;
+    int num_players, num_decks, num_put_down;
     bool not_done = true;
-    string pile;
+    string pile, put_down, discard_card;
+    vector <string> put_down_cards;
 
-    // // Initial user IO
+    // Initial user IO
     cout << "Welcome to the rummy game" << endl;
     cout << "How many people are playing?" << endl;
     cin >> num_players;
@@ -372,14 +461,37 @@ int main(){
             // etc
             cout << "blind or discard? (b or d)\n";
             cin >> pile;
+            // Update their hand and the deck
             // looped_list->pick_up(decks, pile);
             looped_list->pick_up_v(decks, pile);
-            decks.view_decks_v();
+            // View pick up changes 
+            cout << "Original Hand and Decks" << endl;
             looped_list->view_hand_v();
-        //  Update their hand and the deck
-        //  Ask if they put anything down on the table
-        //  Update their table_hand
-        //  Ask what they discarded, update hand and deck
+            decks.view_decks_v();
+            // Ask if they put anything down on the table
+            cout << "Did they put anything down (y or n)\n";
+            cin >> put_down;
+            if(put_down == "y"){
+                cout << "How many cards did they put down?\n";
+                cin >> num_put_down;
+                cout << "Which cards did they put down?\n";
+                for(int i=0; i<num_put_down; i++){
+                    cin >> put_down;
+                    put_down_cards.push_back(put_down);
+                }
+                // Put down those cards
+                looped_list->put_down_v(put_down_cards);
+            }
+            else if(put_down != "n"){
+                cout << "Error: main - Invalid input, must be y or n";
+            }
+            //  Ask what they discarded, update hand and deck
+            cout << "What card did they discard?\n";
+            cin >> discard_card;
+            looped_list->discard_v(decks, discard_card);
+            cout << "Final Hand and Decks" << endl;
+            looped_list->view_hand_v();
+            decks.view_decks_v();
         }
         // else{ 
         //  check what the top card on discard pile is
@@ -429,4 +541,109 @@ void print_lst(plist in_lst){
         cout << in_lst->name << endl;
         in_lst = in_lst->next;
     }
+}
+
+string all_but_last(string str){
+    return str.substr(0, str.size()-1);
+}
+
+bool are_aces_high(const vector <string>& put_down_cards){
+    bool aces_high = true;
+    for(int i=0; i<put_down_cards.size(); i++){
+        if(all_but_last(put_down_cards[i]) == "2"){
+            aces_high = false;
+        }
+    }
+    return aces_high;
+}
+
+bool check_valid_set(vector <string>& put_down_cards){
+    bool same_suit=true, same_num=true, valid=false;
+    bool consecutive = true, aces_high = true;
+    string tmp;
+    vector <bool> visited(put_down_cards.size(), false);
+    // Check they are all either the same number or have
+    // the same suit
+    for(int i=0; i<put_down_cards.size()-1; i++){
+        if(put_down_cards[i].back() != put_down_cards[i+1].back()){
+            same_suit = false;
+        }
+        if(all_but_last(put_down_cards[i]) 
+            != all_but_last(put_down_cards[i+1])){
+            same_num = false;
+        }
+        if((all_but_last(put_down_cards[i]) == "2")
+            || (all_but_last(put_down_cards[i+1]) == "2")){
+                aces_high = false;
+        }
+    }
+    // If all the same number check the 3<=length<=4
+    if(same_num 
+        && (put_down_cards.size()>2) 
+        && (put_down_cards.size()<5)){
+        valid = true;
+    }
+    // If all the same suit check they are consecutive
+    // (Don't need to check less than the size of the hand
+    //  because I already checked all the cards were in 
+    //  the player's hand)
+    if(same_suit && (put_down_cards.size()>2)){
+        int min = eval_card(put_down_cards[0], aces_high);
+        int max = eval_card(put_down_cards[0], aces_high);
+        // Get min and max
+        for(int i=1;i<put_down_cards.size(); i++){
+            if(eval_card(put_down_cards[i], aces_high)<min){
+                min = eval_card(put_down_cards[i], aces_high);
+            }
+            else if(eval_card(put_down_cards[i], aces_high)>max){
+                max = eval_card(put_down_cards[i], aces_high);
+            }
+        }
+        // Check numbers numbers are consecutive
+        cout << "min = " << min << ", max = " << max << endl;
+        if(max - min + 1 == put_down_cards.size()){
+            for(int i=0; i<put_down_cards.size(); i++){
+                if(!visited[eval_card(put_down_cards[i], aces_high)-min]){
+                    visited[eval_card(put_down_cards[i], aces_high)-min] = true;
+                }
+                else{consecutive=false;}
+            }
+            valid = consecutive;
+        }
+        // Bubblesort run for niceness
+        for(int i=0; i<put_down_cards.size(); i++){
+            for(int j=0; j<put_down_cards.size()-1; i++){
+                if(eval_card(put_down_cards[j+1], aces_high)
+                    <eval_card(put_down_cards[j], aces_high)){
+                    tmp = put_down_cards[j];
+                    put_down_cards[j] = put_down_cards[j+1];
+                    put_down_cards[j+1] = tmp;
+                }
+            }
+        }
+    }
+    cout << "returns valid = " << valid << endl;
+    return valid;
+}
+
+int eval_card(const string& str, bool aces_high){
+    string num_part = all_but_last(str);
+    int evalled;
+    if((num_part == "j")||(num_part == "J")){
+        evalled = 11;
+    }
+    else if((num_part == "q")||(num_part == "Q")){
+        evalled = 12;
+    }
+    else if((num_part == "k")||(num_part == "K")){
+        evalled = 13;
+    }
+    else if((num_part == "a")||(num_part == "A")){
+        if(aces_high){evalled = 14;}
+        else{evalled = 1;}
+    }
+    else{
+        evalled = stoi(num_part);
+    }
+    return evalled;
 }
