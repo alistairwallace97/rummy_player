@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <list>
 using namespace std;
 
 // Define a class for the two piles, the discard and blind
@@ -46,6 +47,7 @@ class player {
         string name;
         string* table_hand; // Max length 7
         vector<string> table_hand_v;
+        int cards_left = 7; //Max 7, min 0
         // void initialise_hands();
         void initialise_hands_v();
         // void view_hand();
@@ -58,7 +60,7 @@ class player {
             current_score += num;
         }
         void discard_v(two_decks& decks, string card);
-        int cards_left = 7; //Max 7, min 0
+        vector<vector<string>> get_score(vector<vector<string>>& scores);
         player* next;
 };
 
@@ -72,6 +74,9 @@ string all_but_last(string str);
 bool are_aces_high(const vector <string>& put_down_cards);
 bool check_valid_set(vector <string>& put_down_cards);
 int eval_card(const string& str, bool aces_high);
+void get_scores(int num_players,
+                vector<vector<string>>& scores,
+                plist looped_list);
 
 // void two_decks::initialise_decks(int num_decks, 
 //                                  int num_players){
@@ -393,12 +398,66 @@ void player::discard_v(two_decks& decks, string card){
     }
 }
 
+vector<vector<string>> player::get_score(vector<vector<string>>& scores){
+    // Initialisation
+    bool all_known = true;
+    int num_unknown = 0;
+    string tmp_card;
+    // Printing the player's ending hand
+    cout << name << "'s ending hand:\n";
+    for(int i=0; i<cards_left; i++){
+        cout << hand_v[i] <<", ";
+        if(hand_v[i] == "unk"){
+            all_known = false;
+            num_unknown += 1;
+        }
+    }
+    cout << endl;
+    if(!all_known){
+        for(int i=0; i<cards_left; i++){
+            cout << hand_v[i] <<", ";
+            if(hand_v[i] == "unk"){
+                cout << "\ni = " << i << endl;
+                cout << "Please input what this card was:" << endl;
+                cin >> tmp_card;
+                hand_v[i] = tmp_card;
+                cout << "\nThanks\n";
+            }
+        }
+    }
+    for(int j=0; j<cards_left; j++){
+        cout << "\nhand_v[0] =\n" << endl;
+        for(int i=0; i<cards_left; i++){
+            cout << hand_v[i] <<", ";
+        }
+        cout << endl;
+        // Subtract the value of the card from current_score 
+        current_score -= eval_card(hand_v[0], true);
+        cout << "current_score = " << current_score << endl;
+        // Remove that card from the hand
+        hand_v.erase(remove(hand_v.begin(), hand_v.end(), hand_v[0]), hand_v.end());
+        cout << "\nhand_v[0] =\n" << endl;
+        for(int i=0; i<cards_left; i++){
+            cout << hand_v[i] <<", ";
+        }
+        cout << endl;
+    }
+    // Add [name, current_score] to scores
+    vector<string> name_and_score;
+    name_and_score.push_back(name);
+    name_and_score.push_back(to_string(current_score));
+    scores.push_back(name_and_score);
+    return scores;
+}
+
+
 int main(){
     // Initialisations
     int num_players, num_decks, num_put_down;
     bool not_done = true;
     string pile, put_down, discard_card;
     vector <string> put_down_cards;
+    vector<vector<string>> scores;
 
     // Initial user IO
     cout << "Welcome to the rummy game" << endl;
@@ -506,11 +565,13 @@ int main(){
         // if(len(current_player.hand) == 0){
         //  not_done = false}
         // current_player = current_player.next
-        not_done = false;
+        if(looped_list->cards_left == 0){
+            not_done = false;
+        }
     }
 
     // Find winner
-
+    get_scores(num_players, scores, looped_list);
     return 0;
 }
 
@@ -647,3 +708,31 @@ int eval_card(const string& str, bool aces_high){
     }
     return evalled;
 }
+
+void get_scores(int num_players,
+                vector<vector<string>>& scores,
+                plist looped_list){
+    vector<string> tmp_vec{"name","score"};
+    // Go through each player
+    for(int i=0; i<num_players; i++){
+        scores = looped_list->get_score(scores);
+    }
+    // Order vector in order of score (bubblesort)
+    for(int i=0; i<num_players; i++){
+        for(int j=1; j<num_players; j++){
+            if(stoi(scores[j][1]) > stoi(scores[j-1][1])){
+                tmp_vec = scores[j];
+                scores[j] = scores[j-1];
+                scores[j-1] = tmp_vec;
+            }
+        }
+    }
+    // Print scores in order
+    cout << "\nFinal Scores:\n";
+    for(int i=0; i<num_players; i++){
+        cout << scores[i][0] << ": " << scores[i][1];
+    }
+}
+
+
+
