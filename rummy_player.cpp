@@ -61,6 +61,7 @@ class player {
         }
         void discard_v(two_decks& decks, string card);
         vector<vector<string>> get_score(vector<vector<string>>& scores);
+        void set_hand();
         player* next;
 };
 
@@ -258,28 +259,49 @@ vector<vector<string>> player::get_score(vector<vector<string>>& scores){
         }
     }
     for(int j=0; j<cards_left; j++){
-        cout << "\nhand_v[0] =\n" << endl;
-        for(int i=0; i<cards_left; i++){
-            cout << hand_v[i] <<", ";
-        }
-        cout << endl;
         // Subtract the value of the card from current_score 
         current_score -= eval_card(hand_v[0], true);
-        cout << "current_score = " << current_score << endl;
         // Remove that card from the hand
         hand_v.erase(remove(hand_v.begin(), hand_v.end(), hand_v[0]), hand_v.end());
-        cout << "\nhand_v[0] =\n" << endl;
-        for(int i=0; i<cards_left; i++){
-            cout << hand_v[i] <<", ";
-        }
-        cout << endl;
     }
+    hand_v.clear();
     // Add [name, current_score] to scores
     vector<string> name_and_score;
     name_and_score.push_back(name);
     name_and_score.push_back(to_string(current_score));
     scores.push_back(name_and_score);
     return scores;
+}
+
+void player::set_hand(){
+    // For debuging
+    string yes_or_no;
+    // Print the current hand
+    cout << "In set hand\n" << name << "'s current hand is:\n";
+    for(int i=0; i<cards_left; i++){
+        cout << hand_v[i] << ", ";     
+    }
+    cout << endl;
+    // Ask if they want to change anything
+    cout << "Do you want to change the hand? (y or n)" << endl;
+    cin >> yes_or_no;
+    if(yes_or_no == "y"){
+        for(int i=0; i<cards_left; i++){
+            cout << "\ni = " << i << ", hand_v[i] = " << hand_v[i] << endl;
+            cout << "Change this? (n or the card you want it to be, eg 5h):\n";
+            cin >> yes_or_no;
+            if(yes_or_no != "n"){
+                hand_v[i] = yes_or_no;
+            }
+        }
+        cout << endl;
+    }
+    // Print the end hand
+    cout << name << "'s final hand is:\n";
+    for(int i=0; i<cards_left; i++){
+        cout << hand_v[i] << ", ";   
+    }
+    cout << endl;
 }
 
 
@@ -343,6 +365,10 @@ int main(){
             cout << "Original Hand and Decks" << endl;
             looped_list->view_hand_v();
             decks.view_decks_v();
+            // For debugging
+            // looped_list->set_hand();
+            // cout << "Post set_hand hand" << endl;
+            // looped_list->view_hand_v();
             // Ask which pile they picked up from, card 
             // etc
             cout << "blind or discard? (b or d)\n";
@@ -353,15 +379,20 @@ int main(){
             cout << "Did they put anything down (y or n)\n";
             cin >> put_down;
             if(put_down == "y"){
-                cout << "How many cards did they put down?\n";
-                cin >> num_put_down;
-                cout << "Which cards did they put down?\n";
-                for(int i=0; i<num_put_down; i++){
+                while(put_down == "y"){
+                    cout << "How many cards did they put down?\n";
+                    cin >> num_put_down;
+                    cout << "Which cards did they put down?\n";
+                    for(int i=0; i<num_put_down; i++){
+                        cin >> put_down;
+                        put_down_cards.push_back(put_down);
+                    }
+                    // Put down those cards
+                    looped_list->put_down_v(put_down_cards);
+                    put_down_cards.clear();
+                    cout << "Did they put anything else down? (y or n)\n";
                     cin >> put_down;
-                    put_down_cards.push_back(put_down);
                 }
-                // Put down those cards
-                looped_list->put_down_v(put_down_cards);
             }
             else if(put_down != "n"){
                 cout << "Error: main - Invalid input, must be y or n";
@@ -484,7 +515,6 @@ bool check_valid_set(vector <string>& put_down_cards){
             }
         }
         // Check numbers numbers are consecutive
-        cout << "min = " << min << ", max = " << max << endl;
         if(max - min + 1 == put_down_cards.size()){
             for(int i=0; i<put_down_cards.size(); i++){
                 if(!visited[eval_card(put_down_cards[i], aces_high)-min]){
@@ -506,7 +536,6 @@ bool check_valid_set(vector <string>& put_down_cards){
             }
         }
     }
-    cout << "returns valid = " << valid << endl;
     return valid;
 }
 
@@ -539,6 +568,7 @@ void get_scores(int num_players,
     // Go through each player
     for(int i=0; i<num_players; i++){
         scores = looped_list->get_score(scores);
+        looped_list = looped_list->next;
     }
     // Order vector in order of score (bubblesort)
     for(int i=0; i<num_players; i++){
@@ -553,7 +583,7 @@ void get_scores(int num_players,
     // Print scores in order
     cout << "\nFinal Scores:\n";
     for(int i=0; i<num_players; i++){
-        cout << scores[i][0] << ": " << scores[i][1];
+        cout << scores[i][0] << ": " << scores[i][1] << endl;
     }
 }
 
