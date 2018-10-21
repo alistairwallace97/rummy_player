@@ -78,24 +78,6 @@ void get_scores(int num_players,
                 vector<vector<string>>& scores,
                 plist looped_list);
 
-// void two_decks::initialise_decks(int num_decks, 
-//                                  int num_players){
-//     total_cards = (52*num_decks) - (7*num_players);
-//     current_num_blind = total_cards -1;
-//     string* blind_tmp;
-//     string* disc_pile_tmp;
-//     blind_tmp = new string[current_num_blind];
-//     disc_pile_tmp = new string[1];
-//     for(int i=0; i<current_num_blind; i++){
-//         blind_tmp[i] = "unk";
-//     }
-//     blind_pile = blind_tmp;
-//     discard_pile = disc_pile_tmp;
-//     cout << "What is the first card on the discard pile?\n";
-//     cin >> discard_top;
-//     discard_pile[0] = discard_top;
-// }
-
 void two_decks::initialise_decks_v(int num_decks, 
                                  int num_players){
     total_cards = (52*num_decks) - (7*num_players);
@@ -107,24 +89,6 @@ void two_decks::initialise_decks_v(int num_decks,
     cin >> discard_top;
     discard_pile_v.push_back(discard_top);
 }
-
-// void two_decks::view_decks(){
-//     cout << "entered view_decks" << endl;
-//     cout << "current_num_blind = " << current_num_blind << endl;
-//     cout << "\nThe current decks\nblind:" << endl;
-//     for(int i=0; i<current_num_blind; i++){
-//         cout << blind_pile[i] << ", ";
-//     }
-//     cout << endl << "\ndiscard:" << endl;
-//     cout << "(total_cards - current_num_blind) = " << 
-//         (total_cards - current_num_blind) << endl;
-//     cout << "discard_pile[0] = " << discard_pile[0] << endl;
-//     for(int i=0; i<(total_cards - current_num_blind); i++){
-//         cout << discard_pile[i] << ", ";
-//     }
-//     cout << "finished discard_pile" << endl;
-
-// }
 
 void two_decks::view_decks_v(){
     cout << "\nThe current decks\nblind: ";
@@ -139,62 +103,6 @@ void two_decks::view_decks_v(){
     }
     cout << endl;
 }
-
-// void two_decks::reset_discard_top(){
-//     int discard_size = total_cards - current_num_blind;
-//     discard_top = discard_pile[discard_size-1];
-// }
-
-// string two_decks::remove_top_card(string pile){
-//     string top_card;
-//     if(pile == "b"){
-//         // Remove the first element[0] of the blind pile
-//         top_card = blind_pile[0];
-//         string* new_blind_pile;
-//         new_blind_pile = new string[current_num_blind-1];
-//         for(int i=0; i<current_num_blind-1; i++){
-//             new_blind_pile[i] = blind_pile[i+1];
-//         }
-//         cout << "printing old blind_pile:" << endl;
-//         for(int i=0; i<current_num_blind; i++){
-//             cout << blind_pile[i] << ", ";
-//         } 
-//         cout << endl << "new_blind_pile:" << endl;
-//         for(int i=0; i<current_num_blind-1; i++){
-//             cout << new_blind_pile[i] << ", ";
-//         } 
-
-//         // string* tmp = blind_pile;
-//         blind_pile = new_blind_pile;
-//         current_num_blind--;
-//         cout << endl << "next blind_pile:" << endl;
-//         for(int i=0; i<current_num_blind; i++){
-//             cout << blind_pile[i] << ", ";
-//         } 
-//         cout << endl;
-
-//         // delete[] tmp;
-//     }
-//     else if(pile == "d"){
-//         // Remove last element [-1] of the discard pile
-//         int discard_size = total_cards - current_num_blind;
-//         top_card = discard_pile[discard_size-1];
-//         string* new_discard_pile;
-//         new_discard_pile = new string[discard_size-1];
-//         for(int i=0; i<discard_size-1; i++){
-//             new_discard_pile[i] = discard_pile[i+1];
-//         }
-//         delete[] discard_pile;
-//         discard_pile = new_discard_pile;
-//     }
-//     else{
-//         cout << "Error: two_decks::remove_top_card - pile \
-//         input (" << pile << ") was not in the right \
-//         input.\nShould be either 'b' or 'd'.";
-//         top_card = "Error";
-//     }
-//     return top_card;
-// }
 
 string two_decks::remove_top_card_v(string pile){
     string top_card;
@@ -216,49 +124,11 @@ string two_decks::remove_top_card_v(string pile){
     return top_card;
 }
 
-// void player::initialise_hands(){
-//     if(name == "cpu"){
-//         cout << "\nnot working for cpu yet" << endl;
-//     }
-//     // Doesn't seperately deal with the case of name not
-//     // being initialised.
-//     else{
-//         string* hand_tmp;
-//         string* table_hand_tmp;
-//         int max_size = 7;
-//         // Needs a max_size of 7+1 because during a turn
-//         // a player will have 8 cards before they throw 
-//         // away.
-//         hand_tmp = new string[max_size+1];
-//         table_hand_tmp = new string[max_size];
-//         for(int i=0; i<max_size; i++){
-//             hand_tmp[i] = "unk";
-//             table_hand_tmp[i] = "n/a";
-//         }
-//         hand = hand_tmp;
-//         cards_left = max_size;
-//         table_hand = table_hand_tmp;
-//     }
-// }
-
 void player::initialise_hands_v(){
     for(int i=0; i<7; i++){
         hand_v.push_back("unk");
     }
 }
-
-// void player::view_hand(){
-//     cout << "\nname: " << name;
-//     cout << "\nhand: ";
-//     for(int i=0; i<cards_left; i++){
-//         cout << hand[i] << ", ";
-//     }
-//     cout << "\ntable_hand: ";
-//     for(int i=0; i<cards_left; i++){
-//         cout << table_hand[i] << ", ";
-//     }
-//     cout << endl;
-// }
 
 void player::view_hand_v(){
     cout << "\nname: " << name;
@@ -272,41 +142,6 @@ void player::view_hand_v(){
     }
     cout << endl;    
 }
-
-// void player::pick_up(two_decks& decks, string pile){
-//     cout << "entered pick_up" << endl;
-//     if(pile == "b"){
-//         cout << "if(pile == 'b')" << endl;
-//         // Delete the first element of the blind_pile
-//         //  - Set a new pointer to point to the second el
-//         //  - Delete pointer to the first element
-//         //  - Set decks.blind_pile to the new pointer.
-//         string top_card;
-//         cout << "decks->current_num_blind = " << 
-//             decks.current_num_blind << endl;
-//         top_card = decks.remove_top_card(pile);
-//         cout << "decks->current_num_blind = " << 
-//             decks.current_num_blind << endl;
-//         cout << "top_card = " << top_card << endl;
-//         // Add unknown card to players hand.
-//         // string* tmp_p = decks.;
-//         hand[cards_left] = top_card;
-//         cout << "hand[cards_left] = top_card;" << endl;
-//     }
-//     else if(pile == "d"){
-//         // Add known card to players hand
-//         // hand[cards_left] = decks.discard_top;
-//         // Delete the last element of the discard pile
-//         hand[cards_left] = decks.remove_top_card(pile);
-//         // Set discard_top to be the new last element.
-//         decks.reset_discard_top();
-//     }
-//     else{
-//         cout << "Error: player::pick_up - pile input (" <<
-//         pile << ") was not in the right input.\nShould be \
-//         either 'b' or 'd'." << endl;
-//     }
-// }
 
 void player::pick_up_v(two_decks& decks, string pile){
     if((pile == "b")||(pile == "d")){
@@ -362,9 +197,6 @@ bool player::check_in_hand(string card){
     bool found = false;
     // Check if the card is known to be in the hand
     for(int i=0; (i<hand_v.size())&&(!found); i++){
-        // cout << "i2 = " << i << endl;
-        // cout << "card = " << card << endl;
-        // cout << "hand_v[i] = " << hand_v[i] << endl;
         if(card == hand_v[i]){
             found = true;
         }
@@ -490,22 +322,14 @@ int main(){
 
     // Initialise hands
     for(int i = 0; i < num_players; i++){
-        // looped_list->initialise_hands();
         looped_list->initialise_hands_v();
-        // looped_list->view_hand();
         looped_list->view_hand_v();
         looped_list = looped_list->next;
     }
 
     // Initialise the decks
     two_decks decks;
-    // cout << "initialise_decks" << endl;
-    // decks.initialise_decks(num_decks, num_players);
-    // cout << "initialise_decks_v" << endl;
     decks.initialise_decks_v(num_decks, num_players);
-    // cout << "view_decks" << endl;
-    // decks.view_decks();
-    // cout << "view_decks_v" << endl;
     decks.view_decks_v();
 
     // Start left of the dealer
@@ -516,17 +340,15 @@ int main(){
     while(not_done){
         if(looped_list->name != "cpu"){
             cout << looped_list->name << "'s go\n";
+            cout << "Original Hand and Decks" << endl;
+            looped_list->view_hand_v();
+            decks.view_decks_v();
             // Ask which pile they picked up from, card 
             // etc
             cout << "blind or discard? (b or d)\n";
             cin >> pile;
             // Update their hand and the deck
-            // looped_list->pick_up(decks, pile);
             looped_list->pick_up_v(decks, pile);
-            // View pick up changes 
-            cout << "Original Hand and Decks" << endl;
-            looped_list->view_hand_v();
-            decks.view_decks_v();
             // Ask if they put anything down on the table
             cout << "Did they put anything down (y or n)\n";
             cin >> put_down;
@@ -568,6 +390,7 @@ int main(){
         if(looped_list->cards_left == 0){
             not_done = false;
         }
+        looped_list = looped_list->next;
     }
 
     // Find winner
