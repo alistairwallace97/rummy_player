@@ -5,6 +5,13 @@
 // until the exit condition is met. (One of the players 
 // is out)
 
+// Things to do
+//  - Write a value_card() function
+//  - Write a function for deciding which card to pick on
+//    the first run through the pack
+//  - Write a function for deciding which card to pick on
+//    the second run through the pack.
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -15,8 +22,6 @@ using namespace std;
 // Define a class for the two piles, the discard and blind
 // piles.
 class two_decks {
-        // string* blind_pile;
-        // string* discard_pile;
         vector<string> blind_pile_v;
         vector<string> discard_pile_v;
     public:
@@ -24,18 +29,14 @@ class two_decks {
         int total_cards;
         int total_cards_v;
         int current_num_blind;
-        // void initialise_decks(int num_decks, 
-        //                       int num_players);
         void initialise_decks_v(int num_decks, 
                               int num_players);
-        // void view_decks();
         void view_decks_v();        
-        // void reset_discard_top();
-        // string remove_top_card(string pile);
         string remove_top_card_v(string pile);
         string add_to_discard_v(string card){
             discard_pile_v.push_back(card);
         }
+        void check_flip_decks();
 };
 
 // Define a class of type player
@@ -48,11 +49,8 @@ class player {
         string* table_hand; // Max length 7
         vector<string> table_hand_v;
         int cards_left = 7; //Max 7, min 0
-        // void initialise_hands();
         void initialise_hands_v();
-        // void view_hand();
         void view_hand_v();
-        // void pick_up(two_decks& decks, string pile);
         void pick_up_v(two_decks& decks, string pile);
         void put_down_v(vector <string> put_down_cards);
         bool check_in_hand(string card);
@@ -123,6 +121,15 @@ string two_decks::remove_top_card_v(string pile){
         top_card = "Error";
     }
     return top_card;
+}
+
+void two_decks::check_flip_decks(){
+    if(blind_pile_v.size() == 0){
+        reverse(discard_pile_v.begin(), discard_pile_v.end());
+        blind_pile_v = discard_pile_v;
+        discard_pile_v.clear();
+        cout << "Flipped decks" << endl;
+    }
 }
 
 void player::initialise_hands_v(){
@@ -375,8 +382,11 @@ int main(){
             cin >> pile;
             // Update their hand and the deck
             looped_list->pick_up_v(decks, pile);
+            // Check blind pile doesn't need to be flipped
+            decks.check_flip_decks();
             // Ask if they put anything down on the table
             cout << "Did they put anything down (y or n)\n";
+            cout << "(Only give the first set if multiple sets)\n";
             cin >> put_down;
             if(put_down == "y"){
                 while(put_down == "y"){
@@ -526,7 +536,7 @@ bool check_valid_set(vector <string>& put_down_cards){
         }
         // Bubblesort run for niceness
         for(int i=0; i<put_down_cards.size(); i++){
-            for(int j=0; j<put_down_cards.size()-1; i++){
+            for(int j=0; j<put_down_cards.size()-1; j++){
                 if(eval_card(put_down_cards[j+1], aces_high)
                     <eval_card(put_down_cards[j], aces_high)){
                     tmp = put_down_cards[j];
