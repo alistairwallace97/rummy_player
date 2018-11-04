@@ -17,63 +17,12 @@
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
+#include "two_decks.hpp"
+// #include "player.hpp"
+#include "cpu.hpp"
 using namespace std;
 
-// Define a class for the two piles, the discard and blind
-// piles.
-class two_decks {
-        vector<string> blind_pile_v;
-        vector<string> discard_pile_v;
-    public:
-        string discard_top;
-        int total_cards;
-        int total_cards_v;
-        int current_num_blind;
-        void initialise_decks_v(int num_decks, 
-                              int num_players);
-        void view_decks_v();        
-        string remove_top_card_v(string pile);
-        string add_to_discard_v(string card){
-            discard_pile_v.push_back(card);
-        }
-        void check_flip_decks();
-};
-
-// Define a class of type player
-class player {
-        int current_score; // Min -95, max +95
-    protected:
-        vector<string> hand_v;
-    public:
-        string name;
-        string* table_hand; // Max length 7
-        vector<string> table_hand_v;
-        int cards_left = 7; //Max 7, min 0
-        void initialise_hands_v();
-        void view_hand_v();
-        void pick_up_v(two_decks& decks, string pile);
-        void put_down_v(vector <string> put_down_cards);
-        bool check_in_hand(string card);
-        void increment_score(int num) {
-            current_score += num;
-        }
-        void discard_v(two_decks& decks, string card);
-        vector<vector<string>> get_score(vector<vector<string>>& scores);
-        void set_hand();
-        player* next;
-};
-
-typedef player* plist;
-
-class cpu: public player {
-    public:
-        int value_card(string card, 
-                        vector<string>& useful_cards,
-                        int num_set);
-        string which_pick(two_decks decks);
-        vector<string> check_put_down();
-        string which_throw();
-};
+typedef Player* plist;
 
 // Function Declarations
 plist reverse_list(plist in_lst);
@@ -88,12 +37,12 @@ void get_scores(int num_players,
                 plist looped_list);
 string check_pair(string card1, string card2);
 void update_vector_value(vector<string>& relations);
-void check_adds_to_set(string& current_set, string card);
+string check_adds_to_set(string current_set, string card);
 string val_to_string(int card_val);
 string last_char_as_string(string str);
 
 
-void two_decks::initialise_decks_v(int num_decks, 
+void Two_decks::initialise_decks_v(int num_decks, 
                                  int num_players){
     total_cards = (52*num_decks) - (7*num_players);
     current_num_blind = total_cards -1;
@@ -105,7 +54,7 @@ void two_decks::initialise_decks_v(int num_decks,
     discard_pile_v.push_back(discard_top);
 }
 
-void two_decks::view_decks_v(){
+void Two_decks::view_decks_v(){
     cout << "\nThe current decks\nblind: ";
     cout << blind_pile_v.size() << endl;
     for(int i=0; i<blind_pile_v.size(); i++){
@@ -119,7 +68,7 @@ void two_decks::view_decks_v(){
     cout << endl;
 }
 
-string two_decks::remove_top_card_v(string pile){
+string Two_decks::remove_top_card_v(string pile){
     string top_card;
     if(pile == "b"){
         // Pop_front
@@ -131,7 +80,7 @@ string two_decks::remove_top_card_v(string pile){
         discard_pile_v.pop_back();
     }
     else{
-        cout << "Error: two_decks::remove_top_card_v - pile \
+        cout << "Error: Two_decks::remove_top_card_v - pile \
         input (" << pile << ") was not in the right \
         input.\nShould be either 'b' or 'd'.";
         top_card = "Error";
@@ -139,7 +88,7 @@ string two_decks::remove_top_card_v(string pile){
     return top_card;
 }
 
-void two_decks::check_flip_decks(){
+void Two_decks::check_flip_decks(){
     if(blind_pile_v.size() == 0){
         reverse(discard_pile_v.begin(), discard_pile_v.end());
         blind_pile_v = discard_pile_v;
@@ -148,13 +97,13 @@ void two_decks::check_flip_decks(){
     }
 }
 
-void player::initialise_hands_v(){
+void Player::initialise_hands_v(){
     for(int i=0; i<7; i++){
         hand_v.push_back("unk");
     }
 }
 
-void player::view_hand_v(){
+void Player::view_hand_v(){
     cout << "\nname: " << name;
     cout << "\nhand: ";
     for(int i=0; i<hand_v.size(); i++){
@@ -167,7 +116,7 @@ void player::view_hand_v(){
     cout << endl;    
 }
 
-void player::pick_up_v(two_decks& decks, string pile){
+void Player::pick_up_v(Two_decks& decks, string pile){
     if((pile == "b")||(pile == "d")){
         string test_var = decks.remove_top_card_v(pile);
         hand_v.push_back(test_var);
@@ -179,7 +128,7 @@ void player::pick_up_v(two_decks& decks, string pile){
     }
 }
 
-void player::put_down_v(vector <string> put_down_cards){
+void Player::put_down_v(vector <string> put_down_cards){
     bool all_in=true, aces_high=true;
     string tmp;
     cout << endl;
@@ -217,7 +166,7 @@ void player::put_down_v(vector <string> put_down_cards){
     }
 }
 
-bool player::check_in_hand(string card){
+bool Player::check_in_hand(string card){
     bool found = false;
     // Check if the card is known to be in the hand
     for(int i=0; (i<hand_v.size())&&(!found); i++){
@@ -238,7 +187,7 @@ bool player::check_in_hand(string card){
     return found;
 }
 
-void player::discard_v(two_decks& decks, string card){
+void Player::discard_v(Two_decks& decks, string card){
     // Check the card is in the player's hand
     if(check_in_hand(card)){
         // Add it to the top of the discard pile
@@ -254,7 +203,7 @@ void player::discard_v(two_decks& decks, string card){
     }
 }
 
-vector<vector<string>> player::get_score(vector<vector<string>>& scores){
+vector<vector<string>> Player::get_score(vector<vector<string>>& scores){
     // Initialisation
     bool all_known = true;
     int num_unknown = 0;
@@ -296,7 +245,7 @@ vector<vector<string>> player::get_score(vector<vector<string>>& scores){
     return scores;
 }
 
-void player::set_hand(){
+void Player::set_hand(){
     // For debuging
     string yes_or_no;
     // Print the current hand
@@ -328,32 +277,79 @@ void player::set_hand(){
 }
 
 // vector el = n-slh or n-ns, eg 3-a35 or 2-5hc
-int cpu::value_card(string card,
+int Cpu::value_card(string card,
                     vector<string>& useful_cards,
                     int num_set){
-    // if(n<=2) (vector should just be {"value:0"})
-    //  set vector to empty
-    //  set n = 2
-    //  for each other card, check if they make a pair
-    //   if(pair)
-    //    add to list
-    //    update value
-    //  if(vec.size > 1)
-    //   call recursively on the list with n = 3
-    
-    // If(n>2 and n<5)  (for now)
-    //  For a highest group in list
-    //   Check if there are any extra connected to this
-    //   group
-    //   If(extra)
-    //    Replace root group with extra group 
-    //    update value
-    //  If(any extras)
-    //   call recursively with n = n+1
+    string result;
+    int value_0;
+    // if(n<=2) (vector should just be {"0"})
+    if(num_set <= 2){
+        // set n = 2
+        num_set = 2;
+        // set vector to just {"0"}
+        useful_cards.clear();
+        useful_cards.push_back("0");
+        //  for each other card, check if they make a pair
+        for(int i=0; i<hand_v.size(); i++){
+            // if a valid pair
+            if((hand_v[i] != card) 
+                && (check_pair(hand_v[i], card) != "")){
+                // add to list
+                useful_cards.push_back(check_pair(hand_v[i], card));
+                // update value
+                update_vector_value(useful_cards);
+            }
+        }
+        // If any pairs have been found -> check for threes
+        if(useful_cards.size() > 1){
+            // call recursively on the list with n = 3
+            value_card(card, useful_cards, num_set+1);
+        }
+    }
+    else if((num_set > 2) && (num_set < 5)){
+        value_0 = stoi(useful_cards[0]);
+        // If(n>2 and n<5)  (for now)
+        for(int i=10; i<useful_cards.size(); i++){
+            // For any in the list which are groups of one
+            // smaller than the current num_set
+            if(useful_cards[i].substr(0,1) == to_string(num_set-1)){
+                // Check if any cards in the hand add to 
+                // this set
+                for(int j=0; j<hand_v.size(); j++){
+                    result = check_adds_to_set(useful_cards[i], hand_v[i]);
+                    // If they add to the set add the big
+                    // set to the list
+                    if(result != ""){
+                        useful_cards.push_back(result);
+                    }
+                }
+            }
+        }
+        // remove duplicates
 
+        // update value
+        update_vector_value(useful_cards);
+        // if any new sets have been found
+        if(stoi(useful_cards[0]) != value_0){
+            // call recursively with n = n+1
+            value_card(card, useful_cards, num_set+1);
+        }
+    }
     // If(n>4)
-    //  Do nothing
-    // Else return error "n needs to start at 2"
+    //  Do nothing for now, currently not dealing with
+    //  larger than 3s and 4s because I haven't given 
+    //  the functionality to go out on other people's 
+    //  hands yet. If the cpu played a 5 it would only  
+    //  have two cards left and be unable to go out.
+
+    // Debug Printing
+    cout << "final vector:" << endl;
+    for(int i=0; i<useful_cards.size(); i++){
+        cout << useful_cards[i] << ", ";
+    }
+    cout << endl;
+    // return the value 
+    return stoi(useful_cards[0]);
 }
 
 string check_pair(string card1, string card2){
@@ -421,7 +417,7 @@ string last_char_as_string(string str){
 void update_vector_value(vector<string>& relations){
     int value = 0;
     string value_str;
-    for(int i=0; i<relations.size()-1; i++){
+    for(int i=1; i<relations.size(); i++){
         if(relations[i].at(0) == '2'){
             value += 1;
         }
@@ -433,17 +429,18 @@ void update_vector_value(vector<string>& relations){
         }
     }
     value_str = to_string(value);
-    relations[relations.size()-1] = value_str;
+    relations[0] = value_str;
 }
 
-void check_adds_to_set(string& current_set, string card){
+string check_adds_to_set(string current_set, string card){
     // Current set in form:
     // el = n-slh or n-ns, eg 3-h3-5 or 2-5hc or 3-st-q
     int size;
-    string new_size;
+    string new_size, current_set0 = current_set;
+    bool already_counted = false;
     // If(same suit)
     if(current_set.at(2) == card.back()){
-        int min_val, max_val;
+        int min_val, max_val, card_val_high, card_val_low;
         string min_val_str, max_val_str;
         // Get min_value
         if(current_set.at(3) == 't'){
@@ -458,6 +455,12 @@ void check_adds_to_set(string& current_set, string card){
         }
         else{
             max_val = eval_card(current_set.substr(5,1)+card.back(),true);
+        }
+        card_val_high = eval_card(card, true);
+        card_val_low = eval_card(card, false);
+        if(((card_val_high >= min_val) && (card_val_high <= max_val))
+            ||((card_val_low >= min_val) && (card_val_low <= max_val))){
+            already_counted = true;
         }
         // Update the min_val
         if((min_val != 1)&&(min_val != 14)){
@@ -490,6 +493,12 @@ void check_adds_to_set(string& current_set, string card){
     else if(((current_set.at(2) == 't')
             &&(all_but_last(card) == "10"))
             || (current_set.substr(2,1) == all_but_last(card))){
+        // Check not already included
+        for(int i=0; i<current_set.length()-3; i++){
+            if(current_set.substr(3+i,1) == last_char_as_string(card)){
+                already_counted = true;
+            }
+        }
         // Add suit to end of current_set
         char suit = card.back();
         current_set = current_set.append(1, suit);
@@ -497,6 +506,14 @@ void check_adds_to_set(string& current_set, string card){
         size = stoi(current_set.substr(0,1)) + 1;
         new_size = to_string(size);
         current_set = new_size + current_set.substr(1);
+    }
+    // Check if it's changed or already been counted
+    if((current_set == current_set0)
+        || already_counted){
+        return "";
+    }
+    else{
+        return current_set;
     }
 }
 
@@ -529,22 +546,23 @@ string val_to_string(int card_val){
 
 int main(){
     // update_vector_value testing
-    string card1, card2, result, again = "y";
-    bool pair;
-    while(again == "y"){
-        cout << "Enter two cards:" << endl;
-        cin >> card1 >> card2;
-        result = check_pair(card1, card2);
-        if(result != ""){
-            cout << "These are a pair" << endl;
-            cout << "result = " << result << endl;
-        }
-        else{
-            cout << "These are not a pair" << endl;
-        }
-        cout << "Again? (y or n)" << endl;
-        cin >> again;
-    }
+    string card, again = "y";
+    int value;
+    vector<string> uc_0{"0"};
+    Cpu p1;
+    p1.name = "name";
+    p1.initialise_hands_v();
+    p1.set_hand();
+    p1.view_hand_v();
+    cout << "Input a card to value:" << endl;
+    cin >> card;
+    value = p1.value_card(card, uc_0, 2);
+    cout << "value = " << value << endl;
+
+    // while(again == "y"){
+    //     cout << "Again? (y or n)" << endl;
+    //     cin >> again;
+    // }
 
     // // Initialisations
     // int num_players, num_decks, num_put_down;
@@ -590,7 +608,7 @@ int main(){
     // }
 
     // // Initialise the decks
-    // two_decks decks;
+    // Two_decks decks;
     // decks.initialise_decks_v(num_decks, num_players);
     // decks.view_decks_v();
 
@@ -684,7 +702,7 @@ plist loop_list(plist in_lst){
 plist reverse_list(plist in_lst){
     plist rev_lst = NULL; 
     while(in_lst != NULL){
-        plist tmp_p = new player;
+        plist tmp_p = new Player;
         tmp_p->name = in_lst->name;
         tmp_p->next = rev_lst;
         rev_lst = tmp_p;
