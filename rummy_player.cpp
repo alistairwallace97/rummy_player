@@ -11,6 +11,14 @@
 //    the first run through the pack
 //  - Write a function for deciding which card to pick on
 //    the second run through the pack.
+//  - Add the functionality to be able to put cards on 
+//  - other people's hands.
+//  - Update value function to take this into account.
+//     > This will be hard as you have to now take into
+//       account the fact it may leave you with too few
+//       cards to realistically go out.
+//       Maybe pair=1, other person's hand=2, triple=6,
+//       four=8?
 
 #include <iostream>
 #include <string>
